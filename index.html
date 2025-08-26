@@ -1,0 +1,865 @@
+
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="no-referrer">
+    <title>فروشگاه مجتبی تحریر - لوازم التحریر و نوشت افزار</title>
+    <meta name="description" content="فروشگاه آنلاین مجتبی تحریر - فروش عمده و تکی لوازم التحریر، نوشت افزار، مداد، خودکار، دفتر و کلیه محصولات تحریری با بهترین قیمت">
+    <meta name="keywords" content="لوازم التحریر، نوشت افزار، مداد، خودکار، دفتر، فروش عمده، مجتبی تحریر">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Persian Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Swiper CSS for Slider -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css">
+    
+    <style>
+        body {
+            font-family: 'Vazirmatn', 'Tahoma', sans-serif;
+        }
+        
+        .category-card {
+            transition: all 0.3s ease;
+        }
+        
+        .category-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+        
+        .product-card {
+            transition: all 0.3s ease;
+        }
+        
+        .product-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+            transform: translateY(-1px);
+        }
+        
+        .hero-slider {
+            background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+        }
+        
+        .animate-float {
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .text-gradient {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .swiper-pagination-bullet-active {
+            background: #3b82f6 !important;
+        }
+        
+        .category-purple { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
+        .category-red { background: linear-gradient(135deg, #ef4444, #dc2626); }
+        .category-green { background: linear-gradient(135deg, #10b981, #059669); }
+        .category-orange { background: linear-gradient(135deg, #f97316, #ea580c); }
+        .category-blue { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+        .category-pink { background: linear-gradient(135deg, #ec4899, #db2777); }
+        .category-yellow { background: linear-gradient(135deg, #eab308, #d97706); }
+        .category-indigo { background: linear-gradient(135deg, #6366f1, #4f46e5); }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="bg-white shadow-md sticky top-0 z-50">
+        <div class="container mx-auto px-4">
+            <!-- Top Bar -->
+            <div class="flex items-center justify-between py-2 text-sm text-gray-600 border-b border-gray-100">
+                <div class="flex items-center space-x-4 space-x-reverse">
+                    <span><i class="fas fa-phone text-blue-500"></i> ۰۲۱-۱۲۳۴۵۶۷۸</span>
+                    <span><i class="fas fa-envelope text-blue-500"></i> info@mojtabatahrir.com</span>
+                </div>
+                <div class="flex items-center space-x-3 space-x-reverse">
+                    <a href="#" class="hover:text-blue-500 transition-colors">
+                        <i class="fab fa-instagram"></i>
+                    </a>
+                    <a href="#" class="hover:text-blue-500 transition-colors">
+                        <i class="fab fa-telegram"></i>
+                    </a>
+                    <a href="#" class="hover:text-blue-500 transition-colors">
+                        <i class="fab fa-whatsapp"></i>
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Main Header -->
+            <div class="flex items-center justify-between py-4">
+                <!-- Logo -->
+                <div class="flex items-center">
+                    <div class="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-3 rounded-lg ml-3">
+                        <i class="fas fa-pen-fancy text-2xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-bold text-gradient">مجتبی تحریر</h1>
+                        <p class="text-sm text-gray-500">فروشگاه لوازم التحریر</p>
+                    </div>
+                </div>
+                
+                <!-- Search Bar -->
+                <div class="flex-1 max-w-2xl mx-8">
+                    <div class="relative">
+                        <input type="text" 
+                               placeholder="جستجوی محصولات..." 
+                               class="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <button class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-blue-500">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- User Actions -->
+                <div class="flex items-center space-x-4 space-x-reverse">
+                    <a href="#" class="flex items-center text-gray-700 hover:text-blue-500 transition-colors">
+                        <i class="fas fa-user ml-2"></i>
+                        <span>ورود / ثبت نام</span>
+                    </a>
+                    <a href="#" class="relative flex items-center text-gray-700 hover:text-blue-500 transition-colors">
+                        <i class="fas fa-shopping-cart ml-2 text-xl"></i>
+                        <span>سبد خرید</span>
+                        <span class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">0</span>
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Navigation Menu -->
+            <nav class="border-t border-gray-100">
+                <ul class="flex items-center space-x-8 space-x-reverse py-4">
+                    <li><a href="#" class="text-gray-700 hover:text-blue-500 font-medium transition-colors">صفحه اصلی</a></li>
+                    <li><a href="#" class="text-gray-700 hover:text-blue-500 font-medium transition-colors">محصولات</a></li>
+                    <li><a href="#" class="text-gray-700 hover:text-blue-500 font-medium transition-colors">برندها</a></li>
+                    <li><a href="#" class="text-gray-700 hover:text-blue-500 font-medium transition-colors">فروش ویژه</a></li>
+                    <li><a href="#" class="text-gray-700 hover:text-blue-500 font-medium transition-colors">درباره ما</a></li>
+                    <li><a href="#" class="text-gray-700 hover:text-blue-500 font-medium transition-colors">تماس با ما</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero Slider -->
+    <section class="hero-slider py-8">
+        <div class="container mx-auto px-4">
+            <div class="swiper heroSwiper rounded-2xl overflow-hidden shadow-lg">
+                <div class="swiper-wrapper">
+                    <!-- Slide 1 -->
+                    <div class="swiper-slide">
+                        <div class="relative bg-gradient-to-r from-blue-500 to-purple-600 text-white p-12 min-h-[400px] flex items-center">
+                            <div class="flex-1">
+                                <h2 class="text-4xl font-bold mb-4">مجموعه کامل لوازم التحریر</h2>
+                                <p class="text-xl mb-6 opacity-90">بیش از ۱۰,۰۰۰ محصول با بهترین کیفیت و قیمت</p>
+                                <button class="bg-white text-blue-600 px-8 py-3 rounded-lg font-bold hover:bg-gray-100 transition-colors">
+                                    مشاهده محصولات
+                                </button>
+                            </div>
+                            <div class="flex-1 text-center">
+                                <div class="animate-float">
+                                    <i class="fas fa-pen-nib text-8xl opacity-20"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Slide 2 -->
+                    <div class="swiper-slide">
+                        <div class="relative bg-gradient-to-r from-green-500 to-teal-600 text-white p-12 min-h-[400px] flex items-center">
+                            <div class="flex-1">
+                                <h2 class="text-4xl font-bold mb-4">فروش عمده با تخفیف ویژه</h2>
+                                <p class="text-xl mb-6 opacity-90">برای خریدهای بالای ۵۰۰,۰۰۰ تومان تخفیف ۱۵٪</p>
+                                <button class="bg-white text-green-600 px-8 py-3 rounded-lg font-bold hover:bg-gray-100 transition-colors">
+                                    خرید عمده
+                                </button>
+                            </div>
+                            <div class="flex-1 text-center">
+                                <div class="animate-float">
+                                    <i class="fas fa-boxes text-8xl opacity-20"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Slide 3 -->
+                    <div class="swiper-slide">
+                        <div class="relative bg-gradient-to-r from-orange-500 to-red-600 text-white p-12 min-h-[400px] flex items-center">
+                            <div class="flex-1">
+                                <h2 class="text-4xl font-bold mb-4">ارسال رایگان در تهران</h2>
+                                <p class="text-xl mb-6 opacity-90">برای خریدهای بالای ۲۰۰,۰۰۰ تومان</p>
+                                <button class="bg-white text-orange-600 px-8 py-3 rounded-lg font-bold hover:bg-gray-100 transition-colors">
+                                    شروع خرید
+                                </button>
+                            </div>
+                            <div class="flex-1 text-center">
+                                <div class="animate-float">
+                                    <i class="fas fa-shipping-fast text-8xl opacity-20"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="swiper-pagination"></div>
+                <div class="swiper-button-next"></div>
+                <div class="swiper-button-prev"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Categories Section -->
+    <section class="py-12">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-10">
+                <h2 class="text-3xl font-bold text-gray-800 mb-4">دسته‌بندی محصولات</h2>
+                <p class="text-gray-600">انتخاب کنید و خرید کنید</p>
+            </div>
+            
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+                <!-- Category 1: مداد و مداد رنگی -->
+                <div class="category-card category-pink text-white p-6 rounded-xl text-center cursor-pointer">
+                    <div class="text-4xl mb-4">
+                        <i class="fas fa-pencil-alt"></i>
+                    </div>
+                    <h3 class="text-lg font-bold mb-2">مداد و مداد رنگی</h3>
+                    <p class="text-sm opacity-90">انواع مداد و مداد رنگی</p>
+                    <button class="mt-4 bg-white bg-opacity-20 hover:bg-opacity-30 px-4 py-2 rounded-lg transition-all">
+                        مشاهده
+                    </button>
+                </div>
+                
+                <!-- Category 2: خودکار و روان نویس -->
+                <div class="category-card category-indigo text-white p-6 rounded-xl text-center cursor-pointer">
+                    <div class="text-4xl mb-4">
+                        <i class="fas fa-pen"></i>
+                    </div>
+                    <h3 class="text-lg font-bold mb-2">خودکار و روان نویس</h3>
+                    <p class="text-sm opacity-90">انواع خودکار و روان نویس</p>
+                    <button class="mt-4 bg-white bg-opacity-20 hover:bg-opacity-30 px-4 py-2 rounded-lg transition-all">
+                        مشاهده
+                    </button>
+                </div>
+                
+                <!-- Category 3: دفتر و کاغذ -->
+                <div class="category-card category-green text-white p-6 rounded-xl text-center cursor-pointer">
+                    <div class="text-4xl mb-4">
+                        <i class="fas fa-book"></i>
+                    </div>
+                    <h3 class="text-lg font-bold mb-2">دفتر و کاغذ</h3>
+                    <p class="text-sm opacity-90">انواع دفتر و کاغذ</p>
+                    <button class="mt-4 bg-white bg-opacity-20 hover:bg-opacity-30 px-4 py-2 rounded-lg transition-all">
+                        مشاهده
+                    </button>
+                </div>
+                
+                <!-- Category 4: تراش و پاک کن -->
+                <div class="category-card category-orange text-white p-6 rounded-xl text-center cursor-pointer">
+                    <div class="text-4xl mb-4">
+                        <i class="fas fa-eraser"></i>
+                    </div>
+                    <h3 class="text-lg font-bold mb-2">تراش و پاک کن</h3>
+                    <p class="text-sm opacity-90">انواع تراش و پاک کن</p>
+                    <button class="mt-4 bg-white bg-opacity-20 hover:bg-opacity-30 px-4 py-2 rounded-lg transition-all">
+                        مشاهده
+                    </button>
+                </div>
+                
+                <!-- Category 5: کیف و جامدادی -->
+                <div class="category-card category-purple text-white p-6 rounded-xl text-center cursor-pointer">
+                    <div class="text-4xl mb-4">
+                        <i class="fas fa-briefcase"></i>
+                    </div>
+                    <h3 class="text-lg font-bold mb-2">کیف و جامدادی</h3>
+                    <p class="text-sm opacity-90">انواع کیف و جامدادی</p>
+                    <button class="mt-4 bg-white bg-opacity-20 hover:bg-opacity-30 px-4 py-2 rounded-lg transition-all">
+                        مشاهده
+                    </button>
+                </div>
+                
+                <!-- Category 6: لوازم هنری -->
+                <div class="category-card category-red text-white p-6 rounded-xl text-center cursor-pointer">
+                    <div class="text-4xl mb-4">
+                        <i class="fas fa-palette"></i>
+                    </div>
+                    <h3 class="text-lg font-bold mb-2">لوازم هنری</h3>
+                    <p class="text-sm opacity-90">رنگ، قلم مو و ...</p>
+                    <button class="mt-4 bg-white bg-opacity-20 hover:bg-opacity-30 px-4 py-2 rounded-lg transition-all">
+                        مشاهده
+                    </button>
+                </div>
+                
+                <!-- Category 7: لوازم اداری -->
+                <div class="category-card category-blue text-white p-6 rounded-xl text-center cursor-pointer">
+                    <div class="text-4xl mb-4">
+                        <i class="fas fa-clipboard"></i>
+                    </div>
+                    <h3 class="text-lg font-bold mb-2">لوازم اداری</h3>
+                    <p class="text-sm opacity-90">فایل، کلاسور و ...</p>
+                    <button class="mt-4 bg-white bg-opacity-20 hover:bg-opacity-30 px-4 py-2 rounded-lg transition-all">
+                        مشاهده
+                    </button>
+                </div>
+                
+                <!-- Category 8: بازی و سرگرمی -->
+                <div class="category-card category-yellow text-white p-6 rounded-xl text-center cursor-pointer">
+                    <div class="text-4xl mb-4">
+                        <i class="fas fa-puzzle-piece"></i>
+                    </div>
+                    <h3 class="text-lg font-bold mb-2">بازی و سرگرمی</h3>
+                    <p class="text-sm opacity-90">پازل، بازی فکری و ...</p>
+                    <button class="mt-4 bg-white bg-opacity-20 hover:bg-opacity-30 px-4 py-2 rounded-lg transition-all">
+                        مشاهده
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Best Sellers Section -->
+    <section class="py-12 bg-white">
+        <div class="container mx-auto px-4">
+            <div class="flex items-center justify-between mb-8">
+                <div>
+                    <h2 class="text-3xl font-bold text-gray-800 mb-2">پرفروش‌ترین محصولات</h2>
+                    <p class="text-gray-600">محبوب‌ترین محصولات مشتریان</p>
+                </div>
+                <a href="#" class="text-blue-500 hover:text-blue-600 font-medium">
+                    مشاهده همه <i class="fas fa-arrow-left mr-2"></i>
+                </a>
+            </div>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- Product 1 -->
+                <div class="product-card bg-white border border-gray-200 rounded-xl overflow-hidden">
+                    <div class="relative">
+                        <img src="https://images.unsplash.com/photo-1606092195730-5d7b9af1efc5?w=300&h=300&fit=crop" 
+                             alt="مداد رنگی ۲۴ رنگ" 
+                             class="w-full h-48 object-cover">
+                        <div class="absolute top-3 right-3 bg-red-500 text-white px-2 py-1 rounded-full text-xs font-bold">
+                            ۱۵٪ تخفیف
+                        </div>
+                    </div>
+                    <div class="p-4">
+                        <h3 class="font-bold text-gray-800 mb-2">مداد رنگی ۲۴ رنگ فابر کاستل</h3>
+                        <p class="text-sm text-gray-600 mb-3">کیفیت عالی، رنگ‌های زنده</p>
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center">
+                                <span class="text-lg font-bold text-green-600">۱۲۵,۰۰۰</span>
+                                <span class="text-sm text-gray-500 mr-1">تومان</span>
+                            </div>
+                            <div class="flex items-center text-yellow-400">
+                                <i class="fas fa-star text-xs"></i>
+                                <span class="text-sm text-gray-600 mr-1">۴.۸</span>
+                            </div>
+                        </div>
+                        <button class="w-full btn-primary text-white py-2 rounded-lg font-medium">
+                            <i class="fas fa-shopping-cart ml-2"></i>
+                            افزودن به سبد
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Product 2 -->
+                <div class="product-card bg-white border border-gray-200 rounded-xl overflow-hidden">
+                    <div class="relative">
+                        <img src="https://images.unsplash.com/photo-1586953208448-b95a79798f07?w=300&h=300&fit=crop" 
+                             alt="خودکار آبی" 
+                             class="w-full h-48 object-cover">
+                    </div>
+                    <div class="p-4">
+                        <h3 class="font-bold text-gray-800 mb-2">خودکار آبی پایلوت</h3>
+                        <p class="text-sm text-gray-600 mb-3">نوشتن روان و راحت</p>
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center">
+                                <span class="text-lg font-bold text-green-600">۸,۵۰۰</span>
+                                <span class="text-sm text-gray-500 mr-1">تومان</span>
+                            </div>
+                            <div class="flex items-center text-yellow-400">
+                                <i class="fas fa-star text-xs"></i>
+                                <span class="text-sm text-gray-600 mr-1">۴.۶</span>
+                            </div>
+                        </div>
+                        <button class="w-full btn-primary text-white py-2 rounded-lg font-medium">
+                            <i class="fas fa-shopping-cart ml-2"></i>
+                            افزودن به سبد
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Product 3 -->
+                <div class="product-card bg-white border border-gray-200 rounded-xl overflow-hidden">
+                    <div class="relative">
+                        <img src="https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=300&h=300&fit=crop" 
+                             alt="دفتر مشق" 
+                             class="w-full h-48 object-cover">
+                        <div class="absolute top-3 right-3 bg-green-500 text-white px-2 py-1 rounded-full text-xs font-bold">
+                            جدید
+                        </div>
+                    </div>
+                    <div class="p-4">
+                        <h3 class="font-bold text-gray-800 mb-2">دفتر مشق ۱۰۰ برگ</h3>
+                        <p class="text-sm text-gray-600 mb-3">کاغذ مرغوب، جلد محکم</p>
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center">
+                                <span class="text-lg font-bold text-green-600">۱۵,۰۰۰</span>
+                                <span class="text-sm text-gray-500 mr-1">تومان</span>
+                            </div>
+                            <div class="flex items-center text-yellow-400">
+                                <i class="fas fa-star text-xs"></i>
+                                <span class="text-sm text-gray-600 mr-1">۴.۹</span>
+                            </div>
+                        </div>
+                        <button class="w-full btn-primary text-white py-2 rounded-lg font-medium">
+                            <i class="fas fa-shopping-cart ml-2"></i>
+                            افزودن به سبد
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Product 4 -->
+                <div class="product-card bg-white border border-gray-200 rounded-xl overflow-hidden">
+                    <div class="relative">
+                        <img src="https://images.unsplash.com/photo-1581833971358-2c8b550f87b3?w=300&h=300&fit=crop" 
+                             alt="تراش برقی" 
+                             class="w-full h-48 object-cover">
+                    </div>
+                    <div class="p-4">
+                        <h3 class="font-bold text-gray-800 mb-2">تراش برقی استدلر</h3>
+                        <p class="text-sm text-gray-600 mb-3">تراش سریع و دقیق</p>
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center">
+                                <span class="text-lg font-bold text-green-600">۴۵,۰۰۰</span>
+                                <span class="text-sm text-gray-500 mr-1">تومان</span>
+                            </div>
+                            <div class="flex items-center text-yellow-400">
+                                <i class="fas fa-star text-xs"></i>
+                                <span class="text-sm text-gray-600 mr-1">۴.۷</span>
+                            </div>
+                        </div>
+                        <button class="w-full btn-primary text-white py-2 rounded-lg font-medium">
+                            <i class="fas fa-shopping-cart ml-2"></i>
+                            افزودن به سبد
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- New Products Section -->
+    <section class="py-12 bg-gray-50">
+        <div class="container mx-auto px-4">
+            <div class="flex items-center justify-between mb-8">
+                <div>
+                    <h2 class="text-3xl font-bold text-gray-800 mb-2">جدیدترین محصولات</h2>
+                    <p class="text-gray-600">آخرین محصولات اضافه شده</p>
+                </div>
+                <a href="#" class="text-blue-500 hover:text-blue-600 font-medium">
+                    مشاهده همه <i class="fas fa-arrow-left mr-2"></i>
+                </a>
+            </div>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- New Product 1 -->
+                <div class="product-card bg-white border border-gray-200 rounded-xl overflow-hidden">
+                    <div class="relative">
+                        <img src="https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=300&h=300&fit=crop" 
+                             alt="ست کامل هندسه" 
+                             class="w-full h-48 object-cover">
+                        <div class="absolute top-3 right-3 bg-blue-500 text-white px-2 py-1 rounded-full text-xs font-bold">
+                            جدید
+                        </div>
+                    </div>
+                    <div class="p-4">
+                        <h3 class="font-bold text-gray-800 mb-2">ست کامل هندسه</h3>
+                        <p class="text-sm text-gray-600 mb-3">شامل خط کش، نقاله، پرگار</p>
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center">
+                                <span class="text-lg font-bold text-green-600">۳۵,۰۰۰</span>
+                                <span class="text-sm text-gray-500 mr-1">تومان</span>
+                            </div>
+                            <div class="flex items-center text-yellow-400">
+                                <i class="fas fa-star text-xs"></i>
+                                <span class="text-sm text-gray-600 mr-1">۴.۵</span>
+                            </div>
+                        </div>
+                        <button class="w-full btn-primary text-white py-2 rounded-lg font-medium">
+                            <i class="fas fa-shopping-cart ml-2"></i>
+                            افزودن به سبد
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- New Product 2 -->
+                <div class="product-card bg-white border border-gray-200 rounded-xl overflow-hidden">
+                    <div class="relative">
+                        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=300&fit=crop" 
+                             alt="ماژیک رنگی" 
+                             class="w-full h-48 object-cover">
+                        <div class="absolute top-3 right-3 bg-blue-500 text-white px-2 py-1 rounded-full text-xs font-bold">
+                            جدید
+                        </div>
+                    </div>
+                    <div class="p-4">
+                        <h3 class="font-bold text-gray-800 mb-2">ماژیک رنگی ۱۲ رنگ</h3>
+                        <p class="text-sm text-gray-600 mb-3">رنگ‌های شاد و پایدار</p>
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center">
+                                <span class="text-lg font-bold text-green-600">۲۸,۰۰۰</span>
+                                <span class="text-sm text-gray-500 mr-1">تومان</span>
+                            </div>
+                            <div class="flex items-center text-yellow-400">
+                                <i class="fas fa-star text-xs"></i>
+                                <span class="text-sm text-gray-600 mr-1">۴.۳</span>
+                            </div>
+                        </div>
+                        <button class="w-full btn-primary text-white py-2 rounded-lg font-medium">
+                            <i class="fas fa-shopping-cart ml-2"></i>
+                            افزودن به سبد
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- New Product 3 -->
+                <div class="product-card bg-white border border-gray-200 rounded-xl overflow-hidden">
+                    <div class="relative">
+                        <img src="https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=300&h=300&fit=crop" 
+                             alt="کلاسور" 
+                             class="w-full h-48 object-cover">
+                        <div class="absolute top-3 right-3 bg-blue-500 text-white px-2 py-1 rounded-full text-xs font-bold">
+                            جدید
+                        </div>
+                    </div>
+                    <div class="p-4">
+                        <h3 class="font-bold text-gray-800 mb-2">کلاسور ۴ حلقه</h3>
+                        <p class="text-sm text-gray-600 mb-3">مقاوم و با کیفیت</p>
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center">
+                                <span class="text-lg font-bold text-green-600">۲۲,۰۰۰</span>
+                                <span class="text-sm text-gray-500 mr-1">تومان</span>
+                            </div>
+                            <div class="flex items-center text-yellow-400">
+                                <i class="fas fa-star text-xs"></i>
+                                <span class="text-sm text-gray-600 mr-1">۴.۴</span>
+                            </div>
+                        </div>
+                        <button class="w-full btn-primary text-white py-2 rounded-lg font-medium">
+                            <i class="fas fa-shopping-cart ml-2"></i>
+                            افزودن به سبد
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- New Product 4 -->
+                <div class="product-card bg-white border border-gray-200 rounded-xl overflow-hidden">
+                    <div class="relative">
+                        <img src="https://images.unsplash.com/photo-1541963463532-d68292c34d19?w=300&h=300&fit=crop" 
+                             alt="کیف مدرسه" 
+                             class="w-full h-48 object-cover">
+                        <div class="absolute top-3 right-3 bg-blue-500 text-white px-2 py-1 rounded-full text-xs font-bold">
+                            جدید
+                        </div>
+                    </div>
+                    <div class="p-4">
+                        <h3 class="font-bold text-gray-800 mb-2">کیف مدرسه</h3>
+                        <p class="text-sm text-gray-600 mb-3">طراحی مدرن و کاربردی</p>
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center">
+                                <span class="text-lg font-bold text-green-600">۱۸۵,۰۰۰</span>
+                                <span class="text-sm text-gray-500 mr-1">تومان</span>
+                            </div>
+                            <div class="flex items-center text-yellow-400">
+                                <i class="fas fa-star text-xs"></i>
+                                <span class="text-sm text-gray-600 mr-1">۴.۶</span>
+                            </div>
+                        </div>
+                        <button class="w-full btn-primary text-white py-2 rounded-lg font-medium">
+                            <i class="fas fa-shopping-cart ml-2"></i>
+                            افزودن به سبد
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="py-12 bg-white">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="text-center">
+                    <div class="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-shipping-fast text-2xl text-blue-500"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-800 mb-2">ارسال سریع</h3>
+                    <p class="text-gray-600">ارسال در کمترین زمان ممکن به سراسر کشور</p>
+                </div>
+                
+                <div class="text-center">
+                    <div class="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-medal text-2xl text-green-500"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-800 mb-2">کیفیت تضمینی</h3>
+                    <p class="text-gray-600">تمام محصولات دارای گارانتی اصالت و کیفیت</p>
+                </div>
+                
+                <div class="text-center">
+                    <div class="bg-purple-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-headset text-2xl text-purple-500"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-800 mb-2">پشتیبانی ۲۴/۷</h3>
+                    <p class="text-gray-600">پشتیبانی و مشاوره در تمام ساعات شبانه روز</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-12">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <!-- Company Info -->
+                <div>
+                    <div class="flex items-center mb-4">
+                        <div class="bg-blue-500 text-white p-2 rounded-lg ml-3">
+                            <i class="fas fa-pen-fancy text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold">مجتبی تحریر</h3>
+                            <p class="text-sm text-gray-400">فروشگاه لوازم التحریر</p>
+                        </div>
+                    </div>
+                    <p class="text-gray-400 mb-4">
+                        فروشگاه آنلاین مجتبی تحریر با بیش از ۱۰ سال تجربه در زمینه فروش لوازم التحریر و نوشت افزار، آماده خدمت‌رسانی به شماست.
+                    </p>
+                    <div class="flex space-x-3 space-x-reverse">
+                        <a href="#" class="bg-gray-700 hover:bg-blue-500 p-2 rounded-lg transition-colors">
+                            <i class="fab fa-instagram"></i>
+                        </a>
+                        <a href="#" class="bg-gray-700 hover:bg-blue-500 p-2 rounded-lg transition-colors">
+                            <i class="fab fa-telegram"></i>
+                        </a>
+                        <a href="#" class="bg-gray-700 hover:bg-blue-500 p-2 rounded-lg transition-colors">
+                            <i class="fab fa-whatsapp"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Quick Links -->
+                <div>
+                    <h4 class="text-lg font-bold mb-4">دسترسی سریع</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">صفحه اصلی</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">محصولات</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">برندها</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">فروش ویژه</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">درباره ما</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">تماس با ما</a></li>
+                    </ul>
+                </div>
+                
+                <!-- Categories -->
+                <div>
+                    <h4 class="text-lg font-bold mb-4">دسته‌بندی‌ها</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">مداد و مداد رنگی</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">خودکار و روان نویس</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">دفتر و کاغذ</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">تراش و پاک کن</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">کیف و جامدادی</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">لوازم هنری</a></li>
+                    </ul>
+                </div>
+                
+                <!-- Contact Info -->
+                <div>
+                    <h4 class="text-lg font-bold mb-4">اطلاعات تماس</h4>
+                    <div class="space-y-3">
+                        <div class="flex items-center">
+                            <i class="fas fa-map-marker-alt text-blue-500 ml-3"></i>
+                            <span class="text-gray-400">تهران، خیابان ولیعصر، پلاک ۱۲۳</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-phone text-blue-500 ml-3"></i>
+                            <span class="text-gray-400">۰۲۱-۱۲۳۴۵۶۷۸</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-envelope text-blue-500 ml-3"></i>
+                            <span class="text-gray-400">info@mojtabatahrir.com</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-clock text-blue-500 ml-3"></i>
+                            <span class="text-gray-400">شنبه تا پنج‌شنبه ۹ تا ۱۸</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Copyright -->
+            <div class="border-t border-gray-700 mt-8 pt-8 text-center">
+                <p class="text-gray-400">
+                    © ۱۴۰۳ فروشگاه مجتبی تحریر. تمامی حقوق محفوظ است.
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Swiper JS -->
+    <script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js"></script>
+    
+    <!-- Custom JavaScript -->
+    <script>
+        // Initialize Swiper
+        var swiper = new Swiper('.heroSwiper', {
+            slidesPerView: 1,
+            spaceBetween: 30,
+            loop: true,
+            autoplay: {
+                delay: 5000,
+                disableOnInteraction: false,
+            },
+            pagination: {
+                el: '.swiper-pagination',
+                clickable: true,
+            },
+            navigation: {
+                nextEl: '.swiper-button-next',
+                prevEl: '.swiper-button-prev',
+            },
+        });
+
+        // Smooth scroll for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Add to cart functionality (placeholder)
+        document.querySelectorAll('.btn-primary').forEach(button => {
+            button.addEventListener('click', function(e) {
+                if (this.textContent.includes('افزودن به سبد')) {
+                    e.preventDefault();
+                    
+                    // Add animation
+                    this.innerHTML = '<i class="fas fa-check ml-2"></i>اضافه شد';
+                    this.classList.add('bg-green-500');
+                    this.classList.remove('btn-primary');
+                    
+                    // Reset after 2 seconds
+                    setTimeout(() => {
+                        this.innerHTML = '<i class="fas fa-shopping-cart ml-2"></i>افزودن به سبد';
+                        this.classList.remove('bg-green-500');
+                        this.classList.add('btn-primary');
+                    }, 2000);
+                    
+                    // Update cart counter (placeholder)
+                    const cartCounter = document.querySelector('.fa-shopping-cart').nextElementSibling.nextElementSibling;
+                    if (cartCounter) {
+                        let count = parseInt(cartCounter.textContent) || 0;
+                        cartCounter.textContent = count + 1;
+                    }
+                }
+            });
+        });
+
+        // Search functionality (placeholder)
+        const searchInput = document.querySelector('input[placeholder="جستجوی محصولات..."]');
+        const searchButton = document.querySelector('.fa-search').parentElement;
+        
+        searchButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            const query = searchInput.value.trim();
+            if (query) {
+                alert(`جستجو برای: ${query}`);
+                // Here you would implement actual search functionality
+            }
+        });
+
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                searchButton.click();
+            }
+        });
+
+        // Category card click handlers
+        document.querySelectorAll('.category-card').forEach(card => {
+            card.addEventListener('click', function() {
+                const categoryName = this.querySelector('h3').textContent;
+                alert(`انتقال به دسته‌بندی: ${categoryName}`);
+                // Here you would implement navigation to category page
+            });
+        });
+
+        // Lazy loading for images
+        if ('IntersectionObserver' in window) {
+            const imageObserver = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const img = entry.target;
+                        img.src = img.dataset.src || img.src;
+                        img.classList.remove('lazy');
+                        imageObserver.unobserve(img);
+                    }
+                });
+            });
+
+            document.querySelectorAll('img').forEach(img => {
+                imageObserver.observe(img);
+            });
+        }
+
+        // Add scroll-to-top button
+        const scrollToTopBtn = document.createElement('button');
+        scrollToTopBtn.innerHTML = '<i class="fas fa-arrow-up"></i>';
+        scrollToTopBtn.className = 'fixed bottom-6 left-6 bg-blue-500 hover:bg-blue-600 text-white p-3 rounded-full shadow-lg transition-all duration-300 opacity-0 invisible z-50';
+        scrollToTopBtn.id = 'scrollToTop';
+        document.body.appendChild(scrollToTopBtn);
+
+        window.addEventListener('scroll', function() {
+            if (window.pageYOffset > 300) {
+                scrollToTopBtn.classList.remove('opacity-0', 'invisible');
+            } else {
+                scrollToTopBtn.classList.add('opacity-0', 'invisible');
+            }
+        });
+
+        scrollToTopBtn.addEventListener('click', function() {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+    </script>
+</body>
+</html>
