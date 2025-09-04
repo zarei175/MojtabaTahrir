@@ -1,0 +1,14 @@
+{
+  "imports": {
+    "supabase": "https://esm.sh/@supabase/supabase-js@2.38.4",
+    "cors": "../_shared/cors.ts"
+  },
+  "tasks": {
+    "start": "deno run --allow-all --watch index.ts"
+  },
+  "compilerOptions": {
+    "allowJs": true,
+    "lib": ["deno.window"],
+    "strict": true
+  }
+}

@@ -1,584 +1,491 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import { corsHeaders } from '../_shared/cors.ts';
+import { createClient } from 'supabase';
+import { corsHeaders, handleCors, createResponse, createErrorResponse } from 'cors';
 
-interface KaraApiResponse {
+interface KaraApiResponse<T> {
   success: boolean;
-  data?: any[];
-  message?: string;
-  error?: string;
+  data: T[];
+  total?: number;
+  timestamp: string;
 }
 
-interface SyncRequest {
-  syncType: 'full' | 'incremental' | 'categories' | 'brands' | 'products' | 'prices' | 'inventory';
-  force?: boolean;
-  lastSyncDate?: string;
+interface Category {
+  id: string;
+  name: string;
+  parent_id: string | null;
+  description: string;
+  is_active: boolean;
+  created_at?: string;
+  updated_at?: string;
 }
 
-interface SyncResult {
-  success: boolean;
-  records_processed: number;
-  records_updated: number;
-  records_created: number;
-  records_failed: number;
-  errors: string[];
+interface Brand {
+  id: string;
+  name: string;
+  description: string;
+  country: string;
+  is_active: boolean;
+  created_at?: string;
+  updated_at?: string;
 }
 
-const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-const karaApiUrl = Deno.env.get('KARA_API_URL')!;
-const karaApiKey = Deno.env.get('KARA_API_KEY')!;
+interface Product {
+  id: string;
+  name: string;
+  sku: string;
+  barcode: string;
+  description: string;
+  category_id: string;
+  brand_id: string | null;
+  is_active: boolean;
+  weight: number;
+  dimensions: string;
+  created_at?: string;
+  updated_at?: string;
+}
 
-const supabase = createClient(supabaseUrl, supabaseServiceKey);
+interface ProductPrice {
+  product_id: string;
+  price_type: 'wholesale' | 'retail';
+  price: number;
+  compare_price: number;
+  min_quantity: number;
+  effective_from: string;
+}
+
+interface Inventory {
+  product_id: string;
+  warehouse_id: string;
+  quantity: number;
+  reserved_quantity: number;
+  min_stock_level: number;
+  last_updated: string;
+}
+
+const KARA_API_URL = Deno.env.get('KARA_API_URL') || 'http://localhost:3001/api';
+const KARA_API_KEY = Deno.env.get('KARA_API_KEY') || '';
 
 serve(async (req) => {
   // Handle CORS
-  if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
-  }
+  const corsResponse = handleCors(req);
+  if (corsResponse) return corsResponse;
 
   try {
-    const { syncType, force = false, lastSyncDate }: SyncRequest = await req.json();
-
-    console.log(`Starting sync: ${syncType}, force: ${force}`);
-
-    // Log sync start
-    const { data: syncLog } = await supabase
-      .from('sync_logs')
-      .insert({
-        sync_type: syncType,
-        status: 'running',
-        started_at: new Date().toISOString(),
-      })
-      .select()
-      .single();
-
-    const results: Record<string, SyncResult> = {};
-
-    try {
-      switch (syncType) {
-        case 'full':
-          results.categories = await syncCategories(lastSyncDate);
-          results.brands = await syncBrands(lastSyncDate);
-          results.products = await syncProducts(lastSyncDate);
-          results.prices = await syncPrices(lastSyncDate);
-          results.inventory = await syncInventory(lastSyncDate);
-          break;
-        case 'categories':
-          results.categories = await syncCategories(lastSyncDate);
-          break;
-        case 'brands':
-          results.brands = await syncBrands(lastSyncDate);
-          break;
-        case 'products':
-          results.products = await syncProducts(lastSyncDate);
-          break;
-        case 'prices':
-          results.prices = await syncPrices(lastSyncDate);
-          break;
-        case 'inventory':
-          results.inventory = await syncInventory(lastSyncDate);
-          break;
-        case 'incremental':
-          // Get last successful sync date
-          const { data: lastSync } = await supabase
-            .from('sync_logs')
-            .select('completed_at')
-            .eq('status', 'success')
-            .order('completed_at', { ascending: false })
-            .limit(1)
-            .single();
-
-          const since = lastSync?.completed_at || lastSyncDate;
-          
-          results.categories = await syncCategories(since);
-          results.brands = await syncBrands(since);
-          results.products = await syncProducts(since);
-          results.prices = await syncPrices(since);
-          results.inventory = await syncInventory(since);
-          break;
-        default:
-          throw new Error(`Unknown sync type: ${syncType}`);
-      }
-
-      // Update sync log with success
-      await supabase
-        .from('sync_logs')
-        .update({
-          status: 'success',
-          completed_at: new Date().toISOString(),
-          records_processed: Object.values(results).reduce((sum, r) => sum + r.records_processed, 0),
-          records_updated: Object.values(results).reduce((sum, r) => sum + r.records_updated, 0),
-          records_created: Object.values(results).reduce((sum, r) => sum + r.records_created, 0),
-          records_failed: Object.values(results).reduce((sum, r) => sum + r.records_failed, 0),
-        })
-        .eq('id', syncLog.id);
-
-      return new Response(
-        JSON.stringify({
-          success: true,
-          message: 'همگام‌سازی با موفقیت انجام شد',
-          results,
-          timestamp: new Date().toISOString(),
-        }),
-        {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 200,
-        }
-      );
-
-    } catch (error) {
-      console.error('Sync error:', error);
-
-      // Update sync log with error
-      await supabase
-        .from('sync_logs')
-        .update({
-          status: 'error',
-          completed_at: new Date().toISOString(),
-          error_details: { message: error.message, stack: error.stack },
-        })
-        .eq('id', syncLog.id);
-
-      throw error;
-    }
-
-  } catch (error) {
-    console.error('Request error:', error);
-    
-    return new Response(
-      JSON.stringify({
-        success: false,
-        error: error.message,
-        timestamp: new Date().toISOString(),
-      }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 500,
-      }
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
+
+    const url = new URL(req.url);
+    const action = url.searchParams.get('action') || 'full-sync';
+
+    switch (action) {
+      case 'full-sync':
+        return await performFullSync(supabaseClient);
+      case 'sync-categories':
+        return await syncCategories(supabaseClient);
+      case 'sync-brands':
+        return await syncBrands(supabaseClient);
+      case 'sync-products':
+        return await syncProducts(supabaseClient);
+      case 'sync-prices':
+        return await syncPrices(supabaseClient);
+      case 'sync-inventory':
+        return await syncInventory(supabaseClient);
+      case 'health-check':
+        return await healthCheck();
+      default:
+        return createErrorResponse('Invalid action parameter');
+    }
+  } catch (error) {
+    console.error('Sync error:', error);
+    return createErrorResponse(`Sync failed: ${error.message}`, 500);
   }
 });
 
-async function callKaraApi(endpoint: string, params?: Record<string, string>): Promise<KaraApiResponse> {
-  const url = new URL(`${karaApiUrl}${endpoint}`);
-  
-  if (params) {
-    Object.entries(params).forEach(([key, value]) => {
-      url.searchParams.append(key, value);
+async function performFullSync(supabaseClient: any) {
+  const results = {
+    categories: 0,
+    brands: 0,
+    products: 0,
+    prices: 0,
+    inventory: 0,
+    errors: [] as string[]
+  };
+
+  try {
+    // 1. همگام‌سازی دسته‌بندی‌ها
+    const categoriesResult = await syncCategories(supabaseClient);
+    const categoriesData = await categoriesResult.json();
+    results.categories = categoriesData.synced || 0;
+    if (!categoriesData.success) {
+      results.errors.push(`Categories: ${categoriesData.error}`);
+    }
+
+    // 2. همگام‌سازی برندها
+    const brandsResult = await syncBrands(supabaseClient);
+    const brandsData = await brandsResult.json();
+    results.brands = brandsData.synced || 0;
+    if (!brandsData.success) {
+      results.errors.push(`Brands: ${brandsData.error}`);
+    }
+
+    // 3. همگام‌سازی محصولات
+    const productsResult = await syncProducts(supabaseClient);
+    const productsData = await productsResult.json();
+    results.products = productsData.synced || 0;
+    if (!productsData.success) {
+      results.errors.push(`Products: ${productsData.error}`);
+    }
+
+    // 4. همگام‌سازی قیمت‌ها
+    const pricesResult = await syncPrices(supabaseClient);
+    const pricesData = await pricesResult.json();
+    results.prices = pricesData.synced || 0;
+    if (!pricesData.success) {
+      results.errors.push(`Prices: ${pricesData.error}`);
+    }
+
+    // 5. همگام‌سازی موجودی
+    const inventoryResult = await syncInventory(supabaseClient);
+    const inventoryData = await inventoryResult.json();
+    results.inventory = inventoryData.synced || 0;
+    if (!inventoryData.success) {
+      results.errors.push(`Inventory: ${inventoryData.error}`);
+    }
+
+    return createResponse({
+      success: true,
+      message: 'Full sync completed',
+      results,
+      timestamp: new Date().toISOString()
     });
+
+  } catch (error) {
+    return createErrorResponse(`Full sync failed: ${error.message}`, 500);
   }
-
-  const response = await fetch(url.toString(), {
-    headers: {
-      'Authorization': `Bearer ${karaApiKey}`,
-      'Content-Type': 'application/json',
-    },
-  });
-
-  if (!response.ok) {
-    throw new Error(`Kara API error: ${response.status} ${response.statusText}`);
-  }
-
-  return await response.json();
 }
 
-async function syncCategories(lastSyncDate?: string): Promise<SyncResult> {
-  const result: SyncResult = {
-    success: true,
-    records_processed: 0,
-    records_updated: 0,
-    records_created: 0,
-    records_failed: 0,
-    errors: [],
-  };
-
+async function syncCategories(supabaseClient: any) {
   try {
-    const params = lastSyncDate ? { updated_since: lastSyncDate } : {};
-    const karaResponse = await callKaraApi('/categories', params);
+    // دریافت داده‌ها از کارا
+    const response = await fetch(`${KARA_API_URL}/categories`, {
+      headers: {
+        'Authorization': `Bearer ${KARA_API_KEY}`,
+        'Content-Type': 'application/json'
+      }
+    });
 
-    if (!karaResponse.success || !karaResponse.data) {
-      throw new Error(karaResponse.error || 'No data received from Kara API');
+    if (!response.ok) {
+      throw new Error(`Kara API error: ${response.status}`);
     }
 
-    result.records_processed = karaResponse.data.length;
+    const karaData: KaraApiResponse<Category> = await response.json();
+    
+    if (!karaData.success) {
+      throw new Error('Kara API returned unsuccessful response');
+    }
 
-    for (const karaCategory of karaResponse.data) {
-      try {
-        const categoryData = {
-          name: karaCategory.name,
-          slug: karaCategory.slug || karaCategory.name.toLowerCase().replace(/\s+/g, '-'),
-          description: karaCategory.description,
-          color: karaCategory.color || '#3B82F6',
-          parent_id: karaCategory.parent_id,
-          sort_order: karaCategory.sort_order || 0,
-          is_active: karaCategory.is_active !== false,
-          kara_id: karaCategory.id.toString(),
-          last_synced_at: new Date().toISOString(),
-        };
+    let synced = 0;
+    
+    // به‌روزرسانی یا درج داده‌ها در Supabase
+    for (const category of karaData.data) {
+      const { error } = await supabaseClient
+        .from('categories')
+        .upsert({
+          id: category.id,
+          name: category.name,
+          parent_id: category.parent_id,
+          description: category.description,
+          is_active: category.is_active,
+          updated_at: new Date().toISOString()
+        }, {
+          onConflict: 'id'
+        });
 
-        // Check if category exists
-        const { data: existingCategory } = await supabase
-          .from('categories')
-          .select('id')
-          .eq('kara_id', karaCategory.id.toString())
-          .single();
-
-        if (existingCategory) {
-          // Update existing category
-          const { error } = await supabase
-            .from('categories')
-            .update(categoryData)
-            .eq('id', existingCategory.id);
-
-          if (error) throw error;
-          result.records_updated++;
-        } else {
-          // Create new category
-          const { error } = await supabase
-            .from('categories')
-            .insert(categoryData);
-
-          if (error) throw error;
-          result.records_created++;
-        }
-      } catch (error) {
-        console.error(`Error syncing category ${karaCategory.id}:`, error);
-        result.records_failed++;
-        result.errors.push(`Category ${karaCategory.id}: ${error.message}`);
+      if (error) {
+        console.error('Category upsert error:', error);
+      } else {
+        synced++;
       }
     }
-  } catch (error) {
-    result.success = false;
-    result.errors.push(error.message);
-  }
 
-  return result;
+    return createResponse({
+      success: true,
+      message: 'Categories synced successfully',
+      synced,
+      total: karaData.data.length,
+      timestamp: new Date().toISOString()
+    });
+
+  } catch (error) {
+    return createErrorResponse(`Categories sync failed: ${error.message}`, 500);
+  }
 }
 
-async function syncBrands(lastSyncDate?: string): Promise<SyncResult> {
-  const result: SyncResult = {
-    success: true,
-    records_processed: 0,
-    records_updated: 0,
-    records_created: 0,
-    records_failed: 0,
-    errors: [],
-  };
-
+async function syncBrands(supabaseClient: any) {
   try {
-    const params = lastSyncDate ? { updated_since: lastSyncDate } : {};
-    const karaResponse = await callKaraApi('/brands', params);
+    const response = await fetch(`${KARA_API_URL}/brands`, {
+      headers: {
+        'Authorization': `Bearer ${KARA_API_KEY}`,
+        'Content-Type': 'application/json'
+      }
+    });
 
-    if (!karaResponse.success || !karaResponse.data) {
-      throw new Error(karaResponse.error || 'No data received from Kara API');
+    if (!response.ok) {
+      throw new Error(`Kara API error: ${response.status}`);
     }
 
-    result.records_processed = karaResponse.data.length;
+    const karaData: KaraApiResponse<Brand> = await response.json();
+    
+    if (!karaData.success) {
+      throw new Error('Kara API returned unsuccessful response');
+    }
 
-    for (const karaBrand of karaResponse.data) {
-      try {
-        const brandData = {
-          name: karaBrand.name,
-          slug: karaBrand.slug || karaBrand.name.toLowerCase().replace(/\s+/g, '-'),
-          description: karaBrand.description,
-          logo_url: karaBrand.logo_url,
-          is_active: karaBrand.is_active !== false,
-          kara_id: karaBrand.id.toString(),
-          last_synced_at: new Date().toISOString(),
-        };
+    let synced = 0;
+    
+    for (const brand of karaData.data) {
+      const { error } = await supabaseClient
+        .from('brands')
+        .upsert({
+          id: brand.id,
+          name: brand.name,
+          description: brand.description,
+          country: brand.country,
+          is_active: brand.is_active,
+          updated_at: new Date().toISOString()
+        }, {
+          onConflict: 'id'
+        });
 
-        // Check if brand exists
-        const { data: existingBrand } = await supabase
-          .from('brands')
-          .select('id')
-          .eq('kara_id', karaBrand.id.toString())
-          .single();
-
-        if (existingBrand) {
-          // Update existing brand
-          const { error } = await supabase
-            .from('brands')
-            .update(brandData)
-            .eq('id', existingBrand.id);
-
-          if (error) throw error;
-          result.records_updated++;
-        } else {
-          // Create new brand
-          const { error } = await supabase
-            .from('brands')
-            .insert(brandData);
-
-          if (error) throw error;
-          result.records_created++;
-        }
-      } catch (error) {
-        console.error(`Error syncing brand ${karaBrand.id}:`, error);
-        result.records_failed++;
-        result.errors.push(`Brand ${karaBrand.id}: ${error.message}`);
+      if (error) {
+        console.error('Brand upsert error:', error);
+      } else {
+        synced++;
       }
     }
-  } catch (error) {
-    result.success = false;
-    result.errors.push(error.message);
-  }
 
-  return result;
+    return createResponse({
+      success: true,
+      message: 'Brands synced successfully',
+      synced,
+      total: karaData.data.length,
+      timestamp: new Date().toISOString()
+    });
+
+  } catch (error) {
+    return createErrorResponse(`Brands sync failed: ${error.message}`, 500);
+  }
 }
 
-async function syncProducts(lastSyncDate?: string): Promise<SyncResult> {
-  const result: SyncResult = {
-    success: true,
-    records_processed: 0,
-    records_updated: 0,
-    records_created: 0,
-    records_failed: 0,
-    errors: [],
-  };
-
+async function syncProducts(supabaseClient: any) {
   try {
-    const params = lastSyncDate ? { updated_since: lastSyncDate } : {};
-    const karaResponse = await callKaraApi('/products', params);
+    const response = await fetch(`${KARA_API_URL}/products`, {
+      headers: {
+        'Authorization': `Bearer ${KARA_API_KEY}`,
+        'Content-Type': 'application/json'
+      }
+    });
 
-    if (!karaResponse.success || !karaResponse.data) {
-      throw new Error(karaResponse.error || 'No data received from Kara API');
+    if (!response.ok) {
+      throw new Error(`Kara API error: ${response.status}`);
     }
 
-    result.records_processed = karaResponse.data.length;
+    const karaData: KaraApiResponse<Product> = await response.json();
+    
+    if (!karaData.success) {
+      throw new Error('Kara API returned unsuccessful response');
+    }
 
-    for (const karaProduct of karaResponse.data) {
-      try {
-        // Find category and brand by kara_id
-        const { data: category } = await supabase
-          .from('categories')
-          .select('id')
-          .eq('kara_id', karaProduct.category_id?.toString())
-          .single();
+    let synced = 0;
+    
+    for (const product of karaData.data) {
+      const { error } = await supabaseClient
+        .from('products')
+        .upsert({
+          id: product.id,
+          name: product.name,
+          sku: product.sku,
+          barcode: product.barcode,
+          description: product.description,
+          category_id: product.category_id,
+          brand_id: product.brand_id,
+          is_active: product.is_active,
+          weight: product.weight,
+          dimensions: product.dimensions,
+          updated_at: new Date().toISOString()
+        }, {
+          onConflict: 'id'
+        });
 
-        const { data: brand } = await supabase
-          .from('brands')
-          .select('id')
-          .eq('kara_id', karaProduct.brand_id?.toString())
-          .single();
-
-        const productData = {
-          name: karaProduct.name,
-          slug: karaProduct.slug || karaProduct.name.toLowerCase().replace(/\s+/g, '-'),
-          description: karaProduct.description,
-          short_description: karaProduct.short_description,
-          sku: karaProduct.sku,
-          barcode: karaProduct.barcode,
-          category_id: category?.id,
-          brand_id: brand?.id,
-          images: karaProduct.images || [],
-          specifications: karaProduct.specifications || {},
-          weight: karaProduct.weight,
-          dimensions: karaProduct.dimensions,
-          is_active: karaProduct.is_active !== false,
-          is_featured: karaProduct.is_featured || false,
-          sort_order: karaProduct.sort_order || 0,
-          kara_id: karaProduct.id.toString(),
-          last_synced_at: new Date().toISOString(),
-        };
-
-        // Check if product exists
-        const { data: existingProduct } = await supabase
-          .from('products')
-          .select('id')
-          .eq('kara_id', karaProduct.id.toString())
-          .single();
-
-        if (existingProduct) {
-          // Update existing product
-          const { error } = await supabase
-            .from('products')
-            .update(productData)
-            .eq('id', existingProduct.id);
-
-          if (error) throw error;
-          result.records_updated++;
-        } else {
-          // Create new product
-          const { error } = await supabase
-            .from('products')
-            .insert(productData);
-
-          if (error) throw error;
-          result.records_created++;
-        }
-      } catch (error) {
-        console.error(`Error syncing product ${karaProduct.id}:`, error);
-        result.records_failed++;
-        result.errors.push(`Product ${karaProduct.id}: ${error.message}`);
+      if (error) {
+        console.error('Product upsert error:', error);
+      } else {
+        synced++;
       }
     }
-  } catch (error) {
-    result.success = false;
-    result.errors.push(error.message);
-  }
 
-  return result;
+    return createResponse({
+      success: true,
+      message: 'Products synced successfully',
+      synced,
+      total: karaData.data.length,
+      timestamp: new Date().toISOString()
+    });
+
+  } catch (error) {
+    return createErrorResponse(`Products sync failed: ${error.message}`, 500);
+  }
 }
 
-async function syncPrices(lastSyncDate?: string): Promise<SyncResult> {
-  const result: SyncResult = {
-    success: true,
-    records_processed: 0,
-    records_updated: 0,
-    records_created: 0,
-    records_failed: 0,
-    errors: [],
-  };
-
+async function syncPrices(supabaseClient: any) {
   try {
-    const params = lastSyncDate ? { updated_since: lastSyncDate } : {};
-    const karaResponse = await callKaraApi('/prices', params);
+    const response = await fetch(`${KARA_API_URL}/prices`, {
+      headers: {
+        'Authorization': `Bearer ${KARA_API_KEY}`,
+        'Content-Type': 'application/json'
+      }
+    });
 
-    if (!karaResponse.success || !karaResponse.data) {
-      throw new Error(karaResponse.error || 'No data received from Kara API');
+    if (!response.ok) {
+      throw new Error(`Kara API error: ${response.status}`);
     }
 
-    result.records_processed = karaResponse.data.length;
+    const karaData: KaraApiResponse<ProductPrice> = await response.json();
+    
+    if (!karaData.success) {
+      throw new Error('Kara API returned unsuccessful response');
+    }
 
-    for (const karaPrice of karaResponse.data) {
-      try {
-        // Find product by kara_id
-        const { data: product } = await supabase
-          .from('products')
-          .select('id')
-          .eq('kara_id', karaPrice.product_id?.toString())
-          .single();
+    let synced = 0;
+    
+    for (const price of karaData.data) {
+      const { error } = await supabaseClient
+        .from('product_prices')
+        .upsert({
+          product_id: price.product_id,
+          price_type: price.price_type,
+          price: price.price,
+          compare_price: price.compare_price,
+          min_quantity: price.min_quantity,
+          effective_from: price.effective_from,
+          updated_at: new Date().toISOString()
+        }, {
+          onConflict: 'product_id,price_type'
+        });
 
-        if (!product) {
-          throw new Error(`Product not found for kara_id: ${karaPrice.product_id}`);
-        }
-
-        const priceData = {
-          product_id: product.id,
-          price_type: karaPrice.price_type || 'wholesale',
-          price: karaPrice.price,
-          min_quantity: karaPrice.min_quantity || 1,
-          max_quantity: karaPrice.max_quantity,
-          is_active: karaPrice.is_active !== false,
-        };
-
-        // Check if price exists
-        const { data: existingPrice } = await supabase
-          .from('product_prices')
-          .select('id')
-          .eq('product_id', product.id)
-          .eq('price_type', priceData.price_type)
-          .single();
-
-        if (existingPrice) {
-          // Update existing price
-          const { error } = await supabase
-            .from('product_prices')
-            .update(priceData)
-            .eq('id', existingPrice.id);
-
-          if (error) throw error;
-          result.records_updated++;
-        } else {
-          // Create new price
-          const { error } = await supabase
-            .from('product_prices')
-            .insert(priceData);
-
-          if (error) throw error;
-          result.records_created++;
-        }
-      } catch (error) {
-        console.error(`Error syncing price for product ${karaPrice.product_id}:`, error);
-        result.records_failed++;
-        result.errors.push(`Price for product ${karaPrice.product_id}: ${error.message}`);
+      if (error) {
+        console.error('Price upsert error:', error);
+      } else {
+        synced++;
       }
     }
-  } catch (error) {
-    result.success = false;
-    result.errors.push(error.message);
-  }
 
-  return result;
+    return createResponse({
+      success: true,
+      message: 'Prices synced successfully',
+      synced,
+      total: karaData.data.length,
+      timestamp: new Date().toISOString()
+    });
+
+  } catch (error) {
+    return createErrorResponse(`Prices sync failed: ${error.message}`, 500);
+  }
 }
 
-async function syncInventory(lastSyncDate?: string): Promise<SyncResult> {
-  const result: SyncResult = {
-    success: true,
-    records_processed: 0,
-    records_updated: 0,
-    records_created: 0,
-    records_failed: 0,
-    errors: [],
-  };
-
+async function syncInventory(supabaseClient: any) {
   try {
-    const params = lastSyncDate ? { updated_since: lastSyncDate } : {};
-    const karaResponse = await callKaraApi('/inventory', params);
+    const response = await fetch(`${KARA_API_URL}/inventory`, {
+      headers: {
+        'Authorization': `Bearer ${KARA_API_KEY}`,
+        'Content-Type': 'application/json'
+      }
+    });
 
-    if (!karaResponse.success || !karaResponse.data) {
-      throw new Error(karaResponse.error || 'No data received from Kara API');
+    if (!response.ok) {
+      throw new Error(`Kara API error: ${response.status}`);
     }
 
-    result.records_processed = karaResponse.data.length;
+    const karaData: KaraApiResponse<Inventory> = await response.json();
+    
+    if (!karaData.success) {
+      throw new Error('Kara API returned unsuccessful response');
+    }
 
-    for (const karaInventory of karaResponse.data) {
-      try {
-        // Find product by kara_id
-        const { data: product } = await supabase
-          .from('products')
-          .select('id')
-          .eq('kara_id', karaInventory.product_id?.toString())
-          .single();
+    let synced = 0;
+    
+    for (const inventory of karaData.data) {
+      const { error } = await supabaseClient
+        .from('inventory')
+        .upsert({
+          product_id: inventory.product_id,
+          warehouse_id: inventory.warehouse_id,
+          quantity: inventory.quantity,
+          reserved_quantity: inventory.reserved_quantity,
+          min_stock_level: inventory.min_stock_level,
+          last_updated: inventory.last_updated,
+          updated_at: new Date().toISOString()
+        }, {
+          onConflict: 'product_id,warehouse_id'
+        });
 
-        if (!product) {
-          throw new Error(`Product not found for kara_id: ${karaInventory.product_id}`);
-        }
-
-        const inventoryData = {
-          product_id: product.id,
-          quantity: karaInventory.quantity || 0,
-          reserved_quantity: karaInventory.reserved_quantity || 0,
-          low_stock_threshold: karaInventory.low_stock_threshold || 10,
-          last_updated: new Date().toISOString(),
-        };
-
-        // Check if inventory exists
-        const { data: existingInventory } = await supabase
-          .from('product_inventory')
-          .select('id')
-          .eq('product_id', product.id)
-          .single();
-
-        if (existingInventory) {
-          // Update existing inventory
-          const { error } = await supabase
-            .from('product_inventory')
-            .update(inventoryData)
-            .eq('id', existingInventory.id);
-
-          if (error) throw error;
-          result.records_updated++;
-        } else {
-          // Create new inventory
-          const { error } = await supabase
-            .from('product_inventory')
-            .insert(inventoryData);
-
-          if (error) throw error;
-          result.records_created++;
-        }
-      } catch (error) {
-        console.error(`Error syncing inventory for product ${karaInventory.product_id}:`, error);
-        result.records_failed++;
-        result.errors.push(`Inventory for product ${karaInventory.product_id}: ${error.message}`);
+      if (error) {
+        console.error('Inventory upsert error:', error);
+      } else {
+        synced++;
       }
     }
-  } catch (error) {
-    result.success = false;
-    result.errors.push(error.message);
-  }
 
-  return result;
+    return createResponse({
+      success: true,
+      message: 'Inventory synced successfully',
+      synced,
+      total: karaData.data.length,
+      timestamp: new Date().toISOString()
+    });
+
+  } catch (error) {
+    return createErrorResponse(`Inventory sync failed: ${error.message}`, 500);
+  }
+}
+
+async function healthCheck() {
+  try {
+    // بررسی دسترسی به کارا
+    const karaResponse = await fetch(`${KARA_API_URL}/health`, {
+      headers: {
+        'Authorization': `Bearer ${KARA_API_KEY}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    const karaHealthy = karaResponse.ok;
+    let karaVersion = 'unknown';
+    
+    if (karaHealthy) {
+      const karaData = await karaResponse.json();
+      karaVersion = karaData.version || 'unknown';
+    }
+
+    return createResponse({
+      success: true,
+      message: 'Health check completed',
+      services: {
+        kara: {
+          status: karaHealthy ? 'healthy' : 'unhealthy',
+          version: karaVersion,
+          url: KARA_API_URL
+        },
+        supabase: {
+          status: 'healthy',
+          function: 'sync-kara'
+        }
+      },
+      timestamp: new Date().toISOString()
+    });
+
+  } catch (error) {
+    return createErrorResponse(`Health check failed: ${error.message}`, 500);
+  }
 }
